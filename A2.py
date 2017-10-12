@@ -18,7 +18,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 	PASSWORD = "p4$$w0rD"
 
 	def handshake(self):      
-		self.request.sendall(bytearray("PASSWORD: \n", "utf-8"))
+		self.request.sendall(bytearray("What's the password? \n", "utf-8"))
 		#getUserInput
 		userInput = self.request.recv(self.BUFFER_SIZE)
 
@@ -64,8 +64,8 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 			if len(data) == 0:
 				break 
 			data = data.decode("utf-8")
-			self.request.sendall(bytearray("You said: " + data, "utf-8"))
-			print("%s (%s) wrote: %s" % (self.client_address[0], threading.currentThread().getName(), data.strip()))
+			#self.request.sendall(bytearray("You said: " + data, "utf-8"))
+			print("%s wrote: %s" % (self.client_address[0], data.strip()))
 			self.inputActions(data)
 
 	def inputActions(self, x):
@@ -75,18 +75,17 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 		#Get UserCommand
 		userCommand = userInput.split()
 		command = userCommand[0]
-		print(command)
 
 		#GET WORKING DIRECTORY (pwd)
 		if command == 'pwd':
 			try:
 				#Get working directory
 				directory = os.getcwd()
-				message = "Current working directory is: " + directory
+				message = "Current working directory is: " + directory + "\n"
 
 			except:
-				tb = traceback.format_exc()
-				print (tb)
+				#tb = traceback.format_exc()
+				#print (tb)
 				message = "Error: Wrong number of inputs. Correct command is: pwd"
 
 		#CHANGE WORKING DIRECTORY (cd)
@@ -155,7 +154,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 				fileLocation = os.getcwd()
 				filename = userCommand[1]
 				with open(fileLocation + "/" + filename, 'r') as fileContent:
-					message = fileContent.read()
+					message = fileContent.read() + "\n"
 					#msgDecode = fileContent.read()
 					#message = msgDecode.decode("utf-8")
 				#Alternative -- uses method from the slides
@@ -233,7 +232,9 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 			message = "Logging out"
 			#terminate connection
 			print("Connection was closed")
-			#break
+			self.CONNECTED = False
+			self.request.close()
+			return
 
 		#OPTIONAL PICK 2
 
@@ -253,8 +254,9 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 		else:
 			message = "Error: Command not recognized. \n\nType \'help\' to see available commands" 
 
-		print(message)
-		return message
+		#print(message)
+		self.request.sendall(bytearray(message + "\n", "utf -8"))
+		#return message
 
 if __name__ == "__main__":
 	HOST = "localhost"
