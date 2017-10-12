@@ -69,23 +69,24 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 			self.inputActions(data)
 
 	def inputActions(self, x):
-		
 		userInput = x
 		#userCommand = 
 
 		#Get UserCommand
 		userCommand = userInput.split()
 		command = userCommand[0]
+		print(command)
 
 		#GET WORKING DIRECTORY (pwd)
 		if command == 'pwd':
 			try:
 				#Get working directory
 				directory = os.getcwd()
-				directory = directory.decode("utf-8")
 				message = "Current working directory is: " + directory
 
 			except:
+				tb = traceback.format_exc()
+				print (tb)
 				message = "Error: Wrong number of inputs. Correct command is: pwd"
 
 		#CHANGE WORKING DIRECTORY (cd)
@@ -93,14 +94,16 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 			try:
 				newDir = userCommand[1]
 				cdNewDir = os.chdir(newDir)
-				newDir = cdNewDir.decode("utf-8")
+				#newDir = cdNewDir.decode("utf-8")
 				message = "Directory changed to: " + str(newDir)
 
 			except FileNotFoundError:
 				newDir = userCommand[1]
-				message = "Error: Directory or File does not exist: "  + neWDir 
+				message = "Error: Directory or File does not exist: "  + newDir 
 
 			except:
+				tb = traceback.format_exc()
+				print (tb)
 				message = "Error: Incorrect use of \'cd\'. Correct input is: cd <dir>"
 
 		#LIST FILES AND FOLDERS IN CURRENT DIRECTORY (ls)
@@ -168,18 +171,21 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 		#TAKE A SNAPSHOT OF ALL THE FILES IN CURRENT DIRECTORY AND SAVE IT IN MEMORY (snap)
 		elif command == "snap":
 			try:
-				fileList = defaultdict(list)
-				currentDirectory = os.getcwd
-				directoryFiles = os.listdir(currentDirectory)
+				#fileList = defaultdict(list)
+				currentDirectory = os.getcwd()
+				directoryFiles = str(os.listdir(currentDirectory))
 				for files in directoryFiles:
 					fileList[currentDirectory].append(files)
 				message = "Snapshot of " + str(currentDirectory) + " has been saved"
 			except:
+				tb = traceback.format_exc()
+				print (tb)
 				message = "Error: Unable to take screenshot"
+
 		#COMPARE THE CONTENTS OF THE CURRENT DIRECTORY TO THE SAVED SNAPSHOT AND REPORT DIFFERENCES (diff)
 		elif command == "diff":
-			fileList2 = defaultdict(list)
-			currentDirectory = os.getcwd
+			#fileList2 = defaultdict(list)
+			currentDirectory = os.getcwd()
 			#Do same thing for snap as fileList2
 			try:
 				directoryFiles = os.listdir(currentDirectory)
@@ -189,16 +195,45 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 				if fileList[currentDirectory] == fileList2[currentDirectory]:
 					message = "The files are the same"
 				else:
-					diffList = defaultdict(list)
-					for x in fileList:
-						if x not in fileList2:
+					#diffList = defaultdict(list)
+					for x in fileList[currentDirectory]:
+						if x not in fileList2[currentDirectory]:
 							diffList[currentDirectory].append(str(x) + " was deleted")
-					for x in fileList2:
-						if x not in fileList:
+					for x in fileList2[currentDirectory]:
+						if x not in fileList[currentDirectory]:
 							diffList[currentDirectory].append(str(x) + " was added")
 					message = "These are the differences:\n\n" + ("\n".join(diffList[currentDirectory]))
 			except NameError:
+				tb = traceback.format_exc()
+				print (tb)
 				message = "Error: Original snapshot does not exist"
+
+		elif command == "help":
+			helpMessage = "\n".join([
+				"HERE ARE THE COMMANDS YOU CAN USE",
+				"pwd",
+				"cd <dir>",
+				"ls",
+				"cp <file1> <file2>",
+				"mv <file1> <file2>",
+				"rm <file>",
+				"cat <file>",
+				"snap",
+				"diff",
+				"help [cmd]",
+				"logout",
+				"off"
+				])
+			message = helpMessage 
+			print(helpMessage)
+			print("Enter command:")
+			#GET USER INPUT 
+			print ("You typed " + str(userInput)) #debug
+		elif command == "logout":
+			message = "Logging out"
+			#terminate connection
+			print("Connection was closed")
+			#break
 
 		#OPTIONAL PICK 2
 
@@ -218,6 +253,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 		else:
 			message = "Error: Command not recognized. \n\nType \'help\' to see available commands" 
 
+		print(message)
 		return message
 
 if __name__ == "__main__":
