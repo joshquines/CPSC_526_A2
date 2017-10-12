@@ -90,9 +90,17 @@ def inputActions(x):
 		try:
 			fileLocation = os.getcwd()
 			filename = userCommand[1]
-			with open(fileLocation + filename, 'r') as fileContent:
-				msgDecode = fileContent.read()
-				message = msgDecode.decode("utf-8")
+			with open(fileLocation + "/" + filename, 'r') as fileContent:
+				message = fileContent.read()
+				#msgDecode = fileContent.read()
+				#message = msgDecode.decode("utf-8")
+			#Alternative -- uses method from the slides
+			# newCommand = "cat " + filename
+			# run command and gather all output in memory
+			#output = subprocess.run("cat", shell=True, stdout=subprocess.PIPE).stdout
+			# convert output of the process to string
+			#str = output.decode("utf-8")
+
 		except:
 			message = "Error: Could not cat"
 
@@ -172,9 +180,22 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 			print("%s (%s) wrote: %s" % (self.client_address[0], threading.currentThread().getName(), data.strip()))
 
 if __name__ == "__main__":
-	HOST, PORT = "localhost", 9999
-	server = socketserver.ThreadingTCPServer((HOST, PORT), MyTCPHandler)
-	server.serve_forever()
+	HOST = "localhost"
+	if len(sys.argv) > 1:
+		PORT = int(sys.argv[1])
+	else:
+		print("Port number not specified.")
+		sys.exit()
+
+	try:
+		server = socketserver.TCPServer((HOST, PORT), MyTCPHandler)
+		print("Listening to PORT: " + str(PORT))
+
+		server.serve_forever()
+
+	except Exception as e:
+		print("An error occured: " + str(e))
+		sys.exit()
 """
 End code taken from the provided Assignment 2 slides 
 """
