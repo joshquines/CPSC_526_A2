@@ -218,7 +218,31 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 				message = "Error: Original snapshot does not exist"
 
 		elif command == "help":
-			if command == "help":
+			
+			try:
+				if userCommand[1] == "pwd":
+					message = "pwd shows your current directory\nUsage: pwd"
+				elif userCommand[1] == "cd":
+					message = "cd changes directory. \nUsage: cd <dir>"	
+				elif userCommand[1] == "ls":
+					message = "ls lists the files and folders in current directory \nUsage: ls"
+				elif userCommand[1] == "cp":
+					message = "cp copies a file into another file. \nUsage: cp <file1> <file2>"	
+				elif userCommand[1] == "mv":
+					message = "mv renames a file. \nUsage: mv <filename> <newFilename>"
+				elif userCommand[1] == "rm":
+					message = "rm removes a file. \nUsage: rm <file>"
+				elif userCommand[1] == "cat":
+					message = "cat shows contents of a file. \nUsage: cat <file>"
+				elif userCommand[1] == "snap":
+					message = "snap takes saves a list of files in current directory.\n Usage: snap"
+				elif userCommand[1] == "diff":
+					message = "diff shows differences of files in current directory with previous snapshot.\n Usage: diff"		
+				elif userCommand[1] == "help":
+					message = "You know what it does. Stop asking me"
+				else:
+					message = "Error: Invalid command. Type \"help\" for available commands"
+			except:
 				helpMessage = "\n".join([
 					"HERE ARE THE COMMANDS YOU CAN USE",
 					"pwd",
@@ -235,30 +259,6 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 					"off"
 					])
 				message = helpMessage 
-			elif userCommand[1] == "pwd":
-				message = "pwd shows your current directory\nUsage: pwd"
-			elif userCommand[1] == "cd":
-				message = "cd changes directory. \nUsage: cd <dir>"	
-			elif userCommand[1] == "ls":
-				message = "ls lists the files and folders in current directory \nUsage: ls"
-			elif userCommand[1] == "cp":
-				message = "cp copies a file into another file. \nUsage: cp <file1> <file2>"	
-			elif userCommand[1] == "mv":
-				message = "mv renames a file. \nUsage: mv <filename> <newFilename>"
-			elif userCommand[1] == "rm":
-				message = "rm removes a file. \nUsage: rm <file>"
-			elif userCommand[1] == "cat":
-				message = "cat shows contents of a file. \nUsage: cat <file>"
-			elif userCommand[1] == "snap":
-				message = "snap takes saves a list of files in current directory.\n Usage: snap"
-			elif userCommand[1] == "diff":
-				message = "diff shows differences of files in current directory with previous snapshot.\n Usage: diff"		
-			elif userCommand[1] == "help":
-				message = "You know what it does. Stop asking me"
-			else:
-				print(userInput)
-				message = "Error: invalid command"
-			print(message)
 		elif command == "logout":
 			message = "Logging out"
 			#terminate connection
