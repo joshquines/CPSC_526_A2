@@ -172,10 +172,9 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 			try:
 				#fileList = defaultdict(list)
 				currentDirectory = os.getcwd()
-				directoryFiles = str(os.listdir(currentDirectory))
-				for files in directoryFiles:
-					fileList[currentDirectory].append(files)
+				fileList[currentDirectory] = [f.name for f in os.scandir() if f.is_file()]
 				message = "Snapshot of " + str(currentDirectory) + " has been saved"
+				print(fileList[currentDirectory])
 			except:
 				tb = traceback.format_exc()
 				print (tb)
@@ -187,47 +186,79 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 			currentDirectory = os.getcwd()
 			#Do same thing for snap as fileList2
 			try:
-				directoryFiles = os.listdir(currentDirectory)
-				for files in directoryFiles:
-					fileList2[currentDirectory].append(files)
+				currentDirectory = os.getcwd()
+				fileList2[str(currentDirectory)] = [f.name for f in os.scandir() if f.is_file()]
 
 				if fileList[currentDirectory] == fileList2[currentDirectory]:
 					message = "The files are the same"
+				elif len(fileList[currentDirectory]) < 1:
+					message = "Error: Original snapshot does not exist"
+					print (message)
 				else:
 					#diffList = defaultdict(list)
-					for x in fileList[currentDirectory]:
-						if x not in fileList2[currentDirectory]:
-							diffList[currentDirectory].append(str(x) + " was deleted")
-					for x in fileList2[currentDirectory]:
-						if x not in fileList[currentDirectory]:
-							diffList[currentDirectory].append(str(x) + " was added")
+					for x in fileList[str(currentDirectory)]:
+						if x not in fileList2[str(currentDirectory)]:
+							diffList[str(currentDirectory)].append(str(x) + " was deleted")
+							print("first: " + x)
+					for x in fileList2[str(currentDirectory)]:
+						if x not in fileList[str(currentDirectory)]:
+							diffList[str(currentDirectory)].append(str(x) + " was added")
+							print("second: " + x)
 					message = "These are the differences:\n\n" + ("\n".join(diffList[currentDirectory]))
+
+					print (fileList[currentDirectory])
+					print (fileList2[currentDirectory])
+
+					del diffList[currentDirectory]
+					del fileList2[currentDirectory]
+
 			except NameError:
 				tb = traceback.format_exc()
 				print (tb)
 				message = "Error: Original snapshot does not exist"
 
 		elif command == "help":
-			helpMessage = "\n".join([
-				"HERE ARE THE COMMANDS YOU CAN USE",
-				"pwd",
-				"cd <dir>",
-				"ls",
-				"cp <file1> <file2>",
-				"mv <file1> <file2>",
-				"rm <file>",
-				"cat <file>",
-				"snap",
-				"diff",
-				"help [cmd]",
-				"logout",
-				"off"
-				])
-			message = helpMessage 
-			#print(helpMessage)
-			print("Help menu printed")
-			#GET USER INPUT 
-			#print ("You typed " + str(userInput)) #debug
+			if command == "help":
+				helpMessage = "\n".join([
+					"HERE ARE THE COMMANDS YOU CAN USE",
+					"pwd",
+					"cd <dir>",
+					"ls",
+					"cp <file1> <file2>",
+					"mv <filename> <newFilename>",
+					"rm <file>",
+					"cat <file>",
+					"snap",
+					"diff",
+					"help [cmd]: where cmd = one of the above commands",
+					"logout",
+					"off"
+					])
+				message = helpMessage 
+			elif userCommand[1] == "pwd":
+				message = "pwd shows your current directory\nUsage: pwd"
+			elif userCommand[1] == "cd":
+				message = "cd changes directory. \nUsage: cd <dir>"	
+			elif userCommand[1] == "ls":
+				message = "ls lists the files and folders in current directory \nUsage: ls"
+			elif userCommand[1] == "cp":
+				message = "cp copies a file into another file. \nUsage: cp <file1> <file2>"	
+			elif userCommand[1] == "mv":
+				message = "mv renames a file. \nUsage: mv <filename> <newFilename>"
+			elif userCommand[1] == "rm":
+				message = "rm removes a file. \nUsage: rm <file>"
+			elif userCommand[1] == "cat":
+				message = "cat shows contents of a file. \nUsage: cat <file>"
+			elif userCommand[1] == "snap":
+				message = "snap takes saves a list of files in current directory.\n Usage: snap"
+			elif userCommand[1] == "diff":
+				message = "diff shows differences of files in current directory with previous snapshot.\n Usage: diff"		
+			elif userCommand[1] == "help":
+				message = "You know what it does. Stop asking me"
+			else:
+				print(userInput)
+				message = "Error: invalid command"
+			print(message)
 		elif command == "logout":
 			message = "Logging out"
 			#terminate connection
