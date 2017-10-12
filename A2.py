@@ -3,14 +3,14 @@ import subprocess
 import shutil
 import sys
 from collections import defaultdict
-import socketserver
+import Resocketserver
 import socket, threading
 
 
 def inputActions(x):
 
 	userInput = x
-	userCommand = 
+	#userCommand = 
 
 	#Get UserCommand
 	userCommand = userInput.split()
@@ -21,7 +21,7 @@ def inputActions(x):
 		try:
 			#Get working directory
 			directory = os.getcwd()
-			str(directory) = directory.decode("utf-8")
+			directory = directory.decode("utf-8")
 			message = "Current working directory is: " + directory
 
 		except:
@@ -36,7 +36,7 @@ def inputActions(x):
 			message = "Directory changed to: " + str(newDir)
 
 		except FileNotFoundError:
-			str(newDir) = userCommand[1]
+			newDir = userCommand[1]
 			message = "Error: Directory or File does not exist: "  + neWDir 
 
 		except:
@@ -88,11 +88,13 @@ def inputActions(x):
 	#RETURN CONTENTS OF THE FILE (cat)
 	elif command == "cat":
 		try:
-			str(fileLocation) = os.getcwd
+			fileLocation = os.getcwd()
 			filename = userCommand[1]
 			with open(fileLocation + filename, 'r') as fileContent:
 				msgDecode = fileContent.read()
 				message = msgDecode.decode("utf-8")
+		except:
+			message = "Error: Could not cat"
 
 	#TAKE A SNAPSHOT OF ALL THE FILES IN CURRENT DIRECTORY AND SAVE IT IN MEMORY (snap)
 	elif command == "snap":
@@ -115,7 +117,7 @@ def inputActions(x):
 			for files in directoryFiles:
 				fileList2[currentDirectory].append(files)
 
-			elif fileList[currentDirectory] == fileList2[currentDirectory]:
+			if fileList[currentDirectory] == fileList2[currentDirectory]:
 				message = "The files are the same"
 			else:
 				diffList = defaultdict(list)
@@ -126,7 +128,7 @@ def inputActions(x):
 					if x not in fileList:
 						diffList[currentDirectory].append(str(x) + " was added")
 				message = "These are the differences:\n\n" + ("\n".join(diffList[currentDirectory]))
-		exccept NameError:
+		except NameError:
 			message = "Error: Original snapshot does not exist"
 
 	#OPTIONAL PICK 2
@@ -167,12 +169,12 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 				break 
 			data = data.decode("utf-8")
 			self.request.sendall(bytearray("You said: " + data, "utf-8"))
-			print("%s (%s) wrote: %s" % (self.client_address[0], threading.currentThread().getName(), data.strip())
+			print("%s (%s) wrote: %s" % (self.client_address[0], threading.currentThread().getName(), data.strip()))
 
-if name == "__main__":
+if __name__ == "__main__":
 	HOST, PORT = "localhost", 9999
 	server = socketserver.ThreadingTCPServer((HOST, PORT), MyTCPHandler)
-	server.serve_forever
+	server.serve_forever()
 """
 End code taken from the provided Assignment 2 slides 
 """
@@ -181,7 +183,7 @@ End code taken from the provided Assignment 2 slides
 def main():
 
 	#CONNECT TO CLIENT
-
+	print("message")
 	
 
 	#Get userInput
@@ -199,7 +201,7 @@ def main():
 	#get userInput
 	
 	#START GETTING COMMNDS FROM USER
-	while 
+	while 1:
 		print("Enter command:")
 		#GET USER INPUT 
 		while userInput != "off":
@@ -221,20 +223,20 @@ def main():
 				break
 			elif userInput == "help":
 				helpMessage = "\n".join([
-		            "HERE ARE THE COMMANDS YOU CAN USE",
-		            "pwd",
-		            "cd <dir>",
-		            "ls",
-		            "cp <file1> <file2>",
-		            "mv <file1> <file2>",
-		            "rm <file>",
-		            "cat <file>",
-		            "snap",
-		            "diff",
-		            "help [cmd]",
-		            "logout",
-		            "off"
-		            ])
+					"HERE ARE THE COMMANDS YOU CAN USE",
+					"pwd",
+					"cd <dir>",
+					"ls",
+					"cp <file1> <file2>",
+					"mv <file1> <file2>",
+					"rm <file>",
+					"cat <file>",
+					"snap",
+					"diff",
+					"help [cmd]",
+					"logout",
+					"off"
+					])
 				print(helpMessage)
 				print("Enter command:")
 				#GET USER INPUT 
