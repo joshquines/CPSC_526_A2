@@ -44,10 +44,10 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
 	def handle(self):
 			
-		print(self.client_address[0] + "is now connected")
+		print(self.client_address[0] + " is now connected")
 
 		if not self.handshake():
-			print(self.client_address[0] + "has disconnected")
+			print(self.client_address[0] + " has disconnected")
 			self.request.close()
 			return
 
@@ -272,7 +272,11 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 			self.CONNECTED = False
 			self.request.close()
 			sys.exit()
-
+		elif command in ("ps", "who"):
+			# run command and gather all output in memory
+			output = subprocess.run(command, shell=True, stdout=subprocess.PIPE).stdout
+			# convert output of the process to string
+			message = output.decode("utf-8")
 		#OPTIONAL PICK 2
 
 
@@ -299,6 +303,7 @@ if __name__ == "__main__":
 		PORT = int(sys.argv[1])
 	else:
 		print("Port number not specified.")
+		print("Usage: python3 A2.py <port>\n")
 		sys.exit()
 
 	try:
