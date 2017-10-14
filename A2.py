@@ -1,3 +1,6 @@
+#Names: Steven Leong(T01) and Josh Quines()
+#Student Numbers: 10129668 and 
+
 import os
 import subprocess
 import shutil
@@ -5,47 +8,52 @@ import sys
 from collections import defaultdict
 import socketserver
 import socket, threading
-
-
-
+import traceback
 
 """
 Begin code taken from the provided Assignment 2 slides
 """
 class MyTCPHandler(socketserver.BaseRequestHandler):
-	CONNECTED = False
+	CONNECTED = False					# connection flag
 	BUFFER_SIZE = 4096
-	PASSWORD = "p4$$w0rD"
+	PASSWORD = "p4$$w0rD"				# hardcoded password
+	fileList = defaultdict(list)
+	fileList2 = defaultdict(list)
+	diffList = defaultdict(list)
 
+	# Authentication function
 	def handshake(self):      
 		self.request.sendall(bytearray("What's the password? \n", "utf-8"))
-		#getUserInput
+		# Get User Input
 		userInput = self.request.recv(self.BUFFER_SIZE)
-
-		# check the input
+		# Eheck the input
 		if len(userInput) == self.BUFFER_SIZE:
 			while 1:
-				try:  # error means no more data
+				try:  # Error means no more data
 					userInput += self.request.recv(self.BUFFER_SIZE, socket.MSG_DONTWAIT)
 				except:
 					break
 
 		# convert userInput to string 
-		# [:-1] removes the newline
+		# [:-1] removes the newline made when the user presses enter
 		attempt = userInput.decode("utf-8")[:-1]
 		print("Password entered: " + attempt)
 
+		# compare attempted password with hardcoded password
 		if attempt != self.PASSWORD:
-			self.request.sendall(bytearray("You entered the wrong password. \nTerminating connection. \nBye! ", "utf-8"))
+			# User Failed Authentication
+			self.request.sendall(bytearray("You entered the wrong password. \nTerminating connection. \nBye! \n", "utf-8"))
 			return False
+		# User Passed Authentication
 		print("Correct password used")
 		self.request.sendall(bytearray("Access Granted.\n", "utf-8"))
 		return True
 
 	def handle(self):
-			
+		# Shows server who opened the backdoor program
 		print(self.client_address[0] + " is now connected")
 
+		# if client cannot authenticate, disconnect
 		if not self.handshake():
 			print(self.client_address[0] + " has disconnected")
 			self.request.close()
@@ -54,56 +62,53 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 		self.CONNECTED = True
 
 		while self.CONNECTED:
+			# Get user input
 			data = self.request.recv(self.BUFFER_SIZE)
+			# Check the input
 			if len(data) == self.BUFFER_SIZE:
 				while 1:
-					try: #error means no more data
+					try: # Error means no more data
 						data += self.request.recv(self.BUFFER_SIZE, socket.MSG_DONTWAIT)
 					except:
 						break
 			if len(data) == 0:
 				break 
+
 			data = data.decode("utf-8")
-			#self.request.sendall(bytearray("You said: " + data, "utf-8"))
 			print("%s wrote: %s" % (self.client_address[0], data.strip()))
 			self.inputActions(data)
 
 	def inputActions(self, x):
 		userInput = x
-		#userCommand = 
-
+		
 		#Get UserCommand
 		userCommand = userInput.split()
 		command = userCommand[0]
-
+		
 		#GET WORKING DIRECTORY (pwd)
 		if command == 'pwd':
 			try:
 				#Get working directory
 				directory = os.getcwd()
 				message = "Current working directory is: " + directory + "\n"
-
 			except:
-				#tb = traceback.format_exc()
-				#print (tb)
-				message = "Error: Wrong number of inputs. Correct command is: pwd"
+				message = "Error: Wrong number of inputs. Correct command is: pwd\n"
 
 		#CHANGE WORKING DIRECTORY (cd)
 		elif command == 'cd':
 			try:
 				newDir = userCommand[1]
 				cdNewDir = os.chdir(newDir)
-				#newDir = cdNewDir.decode("utf-8")
-				message = "Directory changed to: " + str(newDir)
+				message = "Directory changed to: " + str(newDir) + "\n"
 
 			except FileNotFoundError:
 				newDir = userCommand[1]
-				message = "Error: Directory or File does not exist: "  + newDir 
+				message = "Error: Directory or File does not exist: "  + newDir + "\n"
 
 			except:
 				tb = traceback.format_exc()
 				print (tb)
-				message = "Error: Incorrect use of \'cd\'. Correct input is: cd <dir>"
+				message = "Error: Incorrect use of \'cd\'. Correct input is: cd <dir>\n"
 
 		#LIST FILES AND FOLDERS IN CURRENT DIRECTORY (ls)
 		elif command == "ls":
@@ -111,7 +116,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 				theList = subprocess.check_output(command)
 				message = theList.decode('utf-8')
 			except:
-				message = "Error: unable to list files and directories"
+				message = "Error: unable to list files and directories\n"
 
 		#COPY A FILE (cp <filename> <newFile>)
 		elif command == "cp":
@@ -119,11 +124,11 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 				file1 = userCommand[1]
 				file2 = userCommand[2]
 				shutil.copy(file1, file2)
-				message = "Copied " + str(file1) + "to " + str(file2)
+				message = "Copied " + str(file1) + " to " + str(file2) +  "\n"
 			except FileNotFoundError:
-				message = "File to copy not found"
+				message = "File to copy not found\n"
 			except:
-				message = "Error: Wrong usage of \'cp\': Enter cp <filename> <newname>"
+				message = "Error: Wrong usage of \'cp\': Enter cp <filename> <newname>\n"
 
 		#RENAME A FILE (cp <filname> <newName>)
 		elif command == "mv":
@@ -131,22 +136,22 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 				file1 = userCommand[1]
 				renamed = userCommand[2]
 				shutil.move(file1, renamed)
-				message = str(file1) + " successfully copied to: " + renamed
+				message = str(file1) + " successfully copied to: " + renamed + "\n"
 			except FileNotFoundError:
-				message = "File to rename not found"
+				message = "File to rename not found\n"
 			except:
-				message = "Error: Wrong usage of \'mv\': Enter mv <filename> <newname>"
+				message = "Error: Wrong usage of \'mv\': Enter mv <filename> <newname>\n"
 
 		#REMOVE A FILE (rm <filePath><filename>)
 		elif command == "rm":
 			try:
 				file1 = userCommand[1]
 				os.remove(file1)
-				message = str(file1) + " has been removed"
+				message = str(file1) + " has been removed\n"
 			except FileNotFoundError:
-				message = "File to be removed not found"
+				message = "File to be removed not found\n"
 			except:
-				message = "Error: Wrong usage of \'rm\': Enter rm <filepath><filename>"
+				message = "Error: Wrong usage of \'rm\': Enter rm <filepath><filename>\n"
 
 		#RETURN CONTENTS OF THE FILE (cat)
 		elif command == "cat":
@@ -165,20 +170,20 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 				#str = output.decode("utf-8")
 
 			except:
-				message = "Error: Could not cat"
+				message = "Error: Could not cat\n"
 
 		#TAKE A SNAPSHOT OF ALL THE FILES IN CURRENT DIRECTORY AND SAVE IT IN MEMORY (snap)
 		elif command == "snap":
 			try:
 				#fileList = defaultdict(list)
 				currentDirectory = os.getcwd()
-				fileList[currentDirectory] = [f.name for f in os.scandir() if f.is_file()]
-				message = "Snapshot of " + str(currentDirectory) + " has been saved"
-				print(fileList[currentDirectory])
+				self.fileList[currentDirectory] = [f.name for f in os.scandir() if f.is_file()]
+				message = "Snapshot of " + str(currentDirectory) + " has been saved\n"
+				print(self.fileList[currentDirectory])
 			except:
 				tb = traceback.format_exc()
 				print (tb)
-				message = "Error: Unable to take screenshot"
+				message = "Error: Unable to take screenshot\n"
 
 		#COMPARE THE CONTENTS OF THE CURRENT DIRECTORY TO THE SAVED SNAPSHOT AND REPORT DIFFERENCES (diff)
 		elif command == "diff":
@@ -187,64 +192,70 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 			#Do same thing for snap as fileList2
 			try:
 				currentDirectory = os.getcwd()
-				fileList2[str(currentDirectory)] = [f.name for f in os.scandir() if f.is_file()]
+				self.fileList2[str(currentDirectory)] = [f.name for f in os.scandir() if f.is_file()]
 
-				if fileList[currentDirectory] == fileList2[currentDirectory]:
-					message = "The files are the same"
-				elif len(fileList[currentDirectory]) < 1:
-					message = "Error: Original snapshot does not exist"
+				if self.fileList[currentDirectory] == self.fileList2[currentDirectory]:
+					message = "The files are the same\n"
+				elif len(self.fileList[currentDirectory]) < 1:
+					message = "Error: Original snapshot does not exist\n"
 					print (message)
 				else:
 					#diffList = defaultdict(list)
-					for x in fileList[str(currentDirectory)]:
-						if x not in fileList2[str(currentDirectory)]:
-							diffList[str(currentDirectory)].append(str(x) + " was deleted")
+					for x in self.fileList[str(currentDirectory)]:
+						if x not in self.fileList2[str(currentDirectory)]:
+							self.diffList[str(currentDirectory)].append(str(x) + " was deleted")
 							print("first: " + x)
-					for x in fileList2[str(currentDirectory)]:
-						if x not in fileList[str(currentDirectory)]:
-							diffList[str(currentDirectory)].append(str(x) + " was added")
+					for x in self.fileList2[str(currentDirectory)]:
+						if x not in self.fileList[str(currentDirectory)]:
+							self.diffList[str(currentDirectory)].append(str(x) + " was added")
 							print("second: " + x)
-					message = "These are the differences:\n\n" + ("\n".join(diffList[currentDirectory]))
+					message = "These are the differences:\n\n" + ("\n".join(self.diffList[currentDirectory])) +"\n"
 
-					print (fileList[currentDirectory])
-					print (fileList2[currentDirectory])
+					print (self.fileList[currentDirectory])
+					print (self.fileList2[currentDirectory])
 
-					del diffList[currentDirectory]
-					del fileList2[currentDirectory]
+					del self.diffList[currentDirectory]
+					del self.fileList2[currentDirectory]
 
 			except NameError:
 				tb = traceback.format_exc()
 				print (tb)
-				message = "Error: Original snapshot does not exist"
+				message = "Error: Original snapshot does not exist\n"
 
 		elif command == "help":
 			
 			try:
 				if userCommand[1] == "pwd":
-					message = "pwd shows your current directory\nUsage: pwd"
+					message = "[pwd] shows your current directory\nUsage: pwd\n"
 				elif userCommand[1] == "cd":
-					message = "cd changes directory. \nUsage: cd <dir>"	
+					message = "[cd] changes directory. \nUsage: cd <dir>\n"	
 				elif userCommand[1] == "ls":
-					message = "ls lists the files and folders in current directory \nUsage: ls"
+					message = "[ls] lists the files and folders in current directory \nUsage: ls\n"
 				elif userCommand[1] == "cp":
-					message = "cp copies a file into another file. \nUsage: cp <file1> <file2>"	
+					message = "[cp] copies a file into another file. \nUsage: cp <file1> <file2>\n"	
 				elif userCommand[1] == "mv":
-					message = "mv renames a file. \nUsage: mv <filename> <newFilename>"
+					message = "[mv] renames a file. \nUsage: mv <filename> <newFilename>\n"
 				elif userCommand[1] == "rm":
-					message = "rm removes a file. \nUsage: rm <file>"
+					message = "[rm] removes a file. \nUsage: rm <file>\n"
 				elif userCommand[1] == "cat":
-					message = "cat shows contents of a file. \nUsage: cat <file>"
+					message = "[cat] shows contents of a file. \nUsage: cat <file>\n"
 				elif userCommand[1] == "snap":
-					message = "snap takes saves a list of files in current directory.\n Usage: snap"
+					message = "[snap] takes saves a list of files in current directory.\n Usage: snap\n"
 				elif userCommand[1] == "diff":
-					message = "diff shows differences of files in current directory with previous snapshot.\n Usage: diff"		
+					message = "[diff] shows differences of files in current directory with previous snapshot.\n Usage: diff\n"		
 				elif userCommand[1] == "help":
-					message = "You know what it does. Stop asking me"
+					message = "You know what it does. Stop asking me\n"
+				elif userCommand[1] == "who":
+					message = "[who] lists user[s] currently logged in\n"
+				elif userCommand[1] == "ps":
+					message = "[ps] shows the currently running programs\n"
 				else:
-					message = "Error: Invalid command. Type \"help\" for available commands"
+					message = "Error: Invalid command. Type \"help\" for available commands\n"
 			except:
 				helpMessage = "\n".join([
+					"---------------------------------",
 					"HERE ARE THE COMMANDS YOU CAN USE",
+					"---------------------------------",
 					"pwd",
 					"cd <dir>",
 					"ls",
@@ -254,15 +265,17 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 					"cat <file>",
 					"snap",
 					"diff",
-					"help [cmd]: where cmd = one of the above commands",
+					"help [cmd]: where cmd = one of the commands",
 					"logout",
-					"off"
+					"off",
+					"who",
+					"ps\n",
 					])
 				message = helpMessage 
 		elif command == "logout":
-			message = "Logging out"
 			#terminate connection
 			print("Connection was closed")
+			self.request.sendall(bytearray("Logging Out... Bye!\n", "utf -8"))
 			self.CONNECTED = False
 			self.request.close()
 			return
@@ -272,7 +285,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 			self.CONNECTED = False
 			self.request.close()
 			sys.exit()
-		elif command in ("ps", "who"):
+		elif command in ("who", "ps"):
 			# run command and gather all output in memory
 			output = subprocess.run(command, shell=True, stdout=subprocess.PIPE).stdout
 			# convert output of the process to string
