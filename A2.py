@@ -1,5 +1,5 @@
-#Names: Steven Leong(T01) and Josh Quines()
-#Student Numbers: 10129668 and 
+# Names: Steven Leong(T01) and Josh Quines()
+# Student Numbers: 10129668 and 
 
 import os
 import subprocess
@@ -26,7 +26,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 		self.request.sendall(bytearray("What's the password? \n", "utf-8"))
 		# Get User Input
 		userInput = self.request.recv(self.BUFFER_SIZE)
-		# Eheck the input
+		# Check the input
 		if len(userInput) == self.BUFFER_SIZE:
 			while 1:
 				try:  # Error means no more data
@@ -81,11 +81,11 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 	def inputActions(self, x):
 		userInput = x
 		
-		#Get UserCommand
+		# Get UserCommand
 		userCommand = userInput.split()
 		command = userCommand[0]
 		
-		#GET WORKING DIRECTORY (pwd)
+		# GET WORKING DIRECTORY (pwd)
 		if command == 'pwd':
 			try:
 				#Get current working directory
@@ -94,7 +94,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 			except:
 				message = "Error: Wrong number of inputs. Correct command is: pwd"
 
-		#CHANGE WORKING DIRECTORY (cd)
+		# CHANGE WORKING DIRECTORY (cd)
 		elif command == 'cd':
 			try:
 				newDir = userCommand[1]
@@ -105,23 +105,13 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 				newDir = userCommand[1]
 				message = "Error: Directory or File does not exist: "  + newDir + ""
 
-			except:						#else if incorrect format is used
-				#----DEBUG----
+			except:						# else if incorrect format is used
+				# ----DEBUG----
 				#tb = traceback.format_exc()
 				#print (tb)
 				message = "Error: Incorrect use of \'cd\'. Correct input is: cd <dir>"
 
-		#LIST FILES AND FOLDERS IN CURRENT DIRECTORY (ls)
-		elif command == "ls":
-			try:
-				# run command and gather all output in memory
-				output = subprocess.run(command, shell=True, stdout=subprocess.PIPE).stdout
-				# convert output of the process to string
-				message = output.decode('utf-8')
-			except:
-				message = "Error: unable to list files and directories"
-
-		#COPY A FILE (cp <filename> <newFile>)
+		# COPY A FILE (cp <filename> <newFile>)
 		elif command == "cp":
 			try:
 				file1 = userCommand[1]
@@ -133,7 +123,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 			except:
 				message = "Error: Wrong usage of \'cp\': Enter cp <filename> <newname>"
 
-		#RENAME A FILE (cp <filname> <newName>)
+		# RENAME A FILE (cp <filname> <newName>)
 		elif command == "mv":
 			try:
 				file1 = userCommand[1]
@@ -145,7 +135,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 			except:
 				message = "Error: Wrong usage of \'mv\': Enter mv <filename> <newname>"
 
-		#REMOVE A FILE (rm <filePath><filename>)
+		# REMOVE A FILE (rm <filePath><filename>)
 		elif command == "rm":
 			try:
 				file1 = userCommand[1]
@@ -156,21 +146,11 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 			except:
 				message = "Error: Wrong usage of \'rm\': Enter rm <filepath><filename>"
 
-		#RETURN CONTENTS OF THE FILE (cat)
+		# RETURN CONTENTS OF THE FILE (cat)
 		elif command == "cat":
 			try:
-				#fileLocation = os.getcwd()
 				filename = userCommand[1]
-				#with open(fileLocation + "/" + filename, 'r') as fileContent:
-					#message = fileContent.read() + "\n"
-					#msgDecode = fileContent.read()
-					#message = msgDecode.decode("utf-8")
-				#Alternative -- uses method from the slides
 				newCommand = "cat " + filename
-				# run command and gather all output in memory
-				#output = subprocess.run("cat", shell=True, stdout=subprocess.PIPE).stdout
-				# convert output of the process to string
-				#str = output.decode("utf-8")
 				# run command and gather all output in memory
 				output = subprocess.run(newCommand, shell=True, stdout=subprocess.PIPE).stdout
 				# convert output of the process to string
@@ -180,10 +160,10 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 			except:
 				message = "Error: Could not cat"
 
-		#TAKE A SNAPSHOT OF ALL THE FILES IN CURRENT DIRECTORY AND SAVE IT IN MEMORY (snap)
+		# TAKE A SNAPSHOT OF ALL THE FILES IN CURRENT DIRECTORY AND SAVE IT IN MEMORY (snap)
 		elif command == "snap":
 			try:
-				#fileList = defaultdict(list)
+				# fileList = defaultdict(list)
 				currentDirectory = os.getcwd()
 				self.fileList[currentDirectory] = [f.name for f in os.scandir() if f.is_file()]
 				message = "Snapshot of " + str(currentDirectory) + " has been saved"
@@ -193,11 +173,11 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 				print (tb)
 				message = "Error: Unable to take screenshot"
 
-		#COMPARE THE CONTENTS OF THE CURRENT DIRECTORY TO THE SAVED SNAPSHOT AND REPORT DIFFERENCES (diff)
+		# COMPARE THE CONTENTS OF THE CURRENT DIRECTORY TO THE SAVED SNAPSHOT AND REPORT DIFFERENCES (diff)
 		elif command == "diff":
-			#fileList2 = defaultdict(list)
+			# fileList2 = defaultdict(list)
 			currentDirectory = os.getcwd()
-			#Do same thing for snap as fileList2
+			# Do same thing for snap as fileList2
 			try:
 				currentDirectory = os.getcwd()
 				self.fileList2[str(currentDirectory)] = [f.name for f in os.scandir() if f.is_file()]
@@ -208,7 +188,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 					message = "Error: Original snapshot does not exist"
 					print (message)
 				else:
-					#diffList = defaultdict(list)
+					# diffList = defaultdict(list)
 					for x in self.fileList[str(currentDirectory)]:
 						if x not in self.fileList2[str(currentDirectory)]:
 							self.diffList[str(currentDirectory)].append(str(x) + " was deleted")
@@ -280,25 +260,45 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 					"ps\n",
 					])
 				message = helpMessage 
+
+		# DISCONNECTS CLIENT (SERVER CLOSES THE SOCKET) (logout)
 		elif command == "logout":
-			#terminate connection
+			# terminate connection
 			print("Connection was closed")
 			self.request.sendall(bytearray("Logging Out... Bye!\n", "utf -8"))
 			self.CONNECTED = False
 			self.request.close()
 			return
+		
+		# TERMINATES THE BACKDOOR PROGRAM (off)
 		elif command == "off":
 			self.request.sendall(bytearray("Terminating the backdoor\n", "utf -8"))
 			print("Backdoor has been terminated by the " + self.client_address[0])
 			self.CONNECTED = False
 			self.request.close()
 			sys.exit()
-		elif command in ("who", "ps"):
-			# run command and gather all output in memory
-			#output = subprocess.run(command, shell=True, stdout=subprocess.PIPE).stdout
-			output = subprocess.check_output(command)
-			# convert output of the process to string
-			message = output.decode("utf-8")
+
+		# LIST FILES AND FOLDERS IN CURRENT DIRECTORY (ls)
+		# LIST USER[S] CURRENTLY LOGGED IN (who)
+		# SHOW CURRENTLY RUNNING PROCESSES (ps)
+		elif command in ("ls", "who", "ps"):
+			try:
+				if len(userCommand) == 1:
+					output = subprocess.run(command, shell=True, stdout=subprocess.PIPE).stdout
+					# output = subprocess.check_output(command)
+					# convert output of the process to string
+					message = output.decode("utf-8")
+				else:
+					message = "Error: Wrong usage of \'" + command + "\': Command does not accept parameters"
+			except:
+				if command == "ls":
+					message = "Error: Unable to list files and directories"
+				elif command == "who":
+					message = "Error: Unable to list user[s] currently logged in"
+				elif command == "ps":
+					message = "Error: Unable to show currently running processes"
+
+
 		#OPTIONAL PICK 2
 
 
