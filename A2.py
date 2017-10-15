@@ -170,15 +170,16 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
             try:
                 # fileList = defaultdict(list)
                 currentDirectory = os.getcwd()
-                #self.fileList[currentDirectory] = [f.name for f in os.scandir() if f.is_file()]
-
+                try:
+                    del fileList[currentDirectory]
+                except:
+                    print("Initial snapshot of " + currentDirectory + " taken.")
                 #SAVE SCREENSHOT
                 for f in os.scandir():
                     if f.is_file():
                         #Get Filename
                         k = f.name 
                         #Get sha-1 hash
-                        
                         FILE_BUFFER = 65536
                         hashFunc = hashlib.sha1()
                         with open(k, 'rb') as toHash:
@@ -188,10 +189,8 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                                     break
                                 hashFunc.update(theHash)
                                 v = hashFunc.hexdigest()
-
-                        #v = hashlib.md5(with open(k, 'rb').read()).hexdigest
                         fileList[currentDirectory].append(k)
-                        hashList1[k] = v                        
+                        hashList1[currentDirectory + k] = v                        
                 message = "Snapshot of " + str(currentDirectory) + " has been saved"
             except:
                 tb = traceback.format_exc()
@@ -211,7 +210,6 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                         #Get Filename
                         k = f.name 
                         #Get sha-1 hash
-                        
                         FILE_BUFFER = 65536
                         hashFunc = hashlib.sha1()
                         with open(k, 'rb') as toHash:
@@ -222,7 +220,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                                 hashFunc.update(theHash)
                                 v = hashFunc.hexdigest()
                         fileList2[currentDirectory].append(k)
-                        hashList2[k] = v  
+                        hashList2[currentDirectory + k] = v  
 
                 #COMPARE SCREENSHOTS  
                 if fileList[currentDirectory] == fileList2[currentDirectory]:
@@ -230,8 +228,8 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                     #CHECK IF CURRENT FILES ARE MODIFIED
                     for x in fileList[str(currentDirectory)]:
                         print("BEORE COMPARE :" + x)
-                        fileHash1 = hashList1[x]
-                        fileHash2 = hashList2[x]
+                        fileHash1 = hashList1[currentDirectory + x]
+                        fileHash2 = hashList2[currentDirectory + x]
                         print("HASH1 BEFORE CHECK: " + str(fileHash1))
                         print("HASH2 BEFORE CHECK: " + str(fileHash2))
                         if fileHash1 != fileHash2:
@@ -239,7 +237,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                             
                             print("HASH1: " + str(fileHash1))
                             print("HASH2: " + str(fileHash2))
-                            del hashList2[x]
+                            del hashList2[currentDirectory + x]
                     if len(diffList) > 0:
                         message = ("The filenames are the same but these have been modified: \n" + ("\n".join(diffList[currentDirectory])))
                         del diffList[currentDirectory]
