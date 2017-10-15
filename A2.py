@@ -88,11 +88,11 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 		#GET WORKING DIRECTORY (pwd)
 		if command == 'pwd':
 			try:
-				#Get working directory
+				#Get current working directory
 				directory = os.getcwd()
-				message = "Current working directory is: " + directory + "\n"
+				message = "Current working directory is: " + directory
 			except:
-				message = "Error: Wrong number of inputs. Correct command is: pwd\n"
+				message = "Error: Wrong number of inputs. Correct command is: pwd"
 
 		#CHANGE WORKING DIRECTORY (cd)
 		elif command == 'cd':
@@ -101,22 +101,25 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 				cdNewDir = os.chdir(newDir)
 				message = "Directory changed to: " + str(newDir) + "\n"
 
-			except FileNotFoundError:
+			except FileNotFoundError:	# if there is not directory/file with that name
 				newDir = userCommand[1]
-				message = "Error: Directory or File does not exist: "  + newDir + "\n"
+				message = "Error: Directory or File does not exist: "  + newDir + ""
 
-			except:
-				tb = traceback.format_exc()
-				print (tb)
-				message = "Error: Incorrect use of \'cd\'. Correct input is: cd <dir>\n"
+			except:						#else if incorrect format is used
+				#----DEBUG----
+				#tb = traceback.format_exc()
+				#print (tb)
+				message = "Error: Incorrect use of \'cd\'. Correct input is: cd <dir>"
 
 		#LIST FILES AND FOLDERS IN CURRENT DIRECTORY (ls)
 		elif command == "ls":
 			try:
-				theList = subprocess.check_output(command)
-				message = theList.decode('utf-8')
+				# run command and gather all output in memory
+				output = subprocess.run(command, shell=True, stdout=subprocess.PIPE).stdout
+				# convert output of the process to string
+				message = output.decode('utf-8')
 			except:
-				message = "Error: unable to list files and directories\n"
+				message = "Error: unable to list files and directories"
 
 		#COPY A FILE (cp <filename> <newFile>)
 		elif command == "cp":
@@ -124,11 +127,11 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 				file1 = userCommand[1]
 				file2 = userCommand[2]
 				shutil.copy(file1, file2)
-				message = "Copied " + str(file1) + " to " + str(file2) +  "\n"
+				message = "Copied " + str(file1) + " to " + str(file2)
 			except FileNotFoundError:
 				message = "File to copy not found\n"
 			except:
-				message = "Error: Wrong usage of \'cp\': Enter cp <filename> <newname>\n"
+				message = "Error: Wrong usage of \'cp\': Enter cp <filename> <newname>"
 
 		#RENAME A FILE (cp <filname> <newName>)
 		elif command == "mv":
@@ -136,41 +139,46 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 				file1 = userCommand[1]
 				renamed = userCommand[2]
 				shutil.move(file1, renamed)
-				message = str(file1) + " successfully copied to: " + renamed + "\n"
+				message = str(file1) + " successfully renamed to: " + renamed
 			except FileNotFoundError:
-				message = "File to rename not found\n"
+				message = "File to rename not found"
 			except:
-				message = "Error: Wrong usage of \'mv\': Enter mv <filename> <newname>\n"
+				message = "Error: Wrong usage of \'mv\': Enter mv <filename> <newname>"
 
 		#REMOVE A FILE (rm <filePath><filename>)
 		elif command == "rm":
 			try:
 				file1 = userCommand[1]
 				os.remove(file1)
-				message = str(file1) + " has been removed\n"
+				message = str(file1) + " has been removed"
 			except FileNotFoundError:
-				message = "File to be removed not found\n"
+				message = "Could not find file: " + file1
 			except:
-				message = "Error: Wrong usage of \'rm\': Enter rm <filepath><filename>\n"
+				message = "Error: Wrong usage of \'rm\': Enter rm <filepath><filename>"
 
 		#RETURN CONTENTS OF THE FILE (cat)
 		elif command == "cat":
 			try:
-				fileLocation = os.getcwd()
+				#fileLocation = os.getcwd()
 				filename = userCommand[1]
-				with open(fileLocation + "/" + filename, 'r') as fileContent:
-					message = fileContent.read() + "\n"
+				#with open(fileLocation + "/" + filename, 'r') as fileContent:
+					#message = fileContent.read() + "\n"
 					#msgDecode = fileContent.read()
 					#message = msgDecode.decode("utf-8")
 				#Alternative -- uses method from the slides
-				# newCommand = "cat " + filename
+				newCommand = "cat " + filename
 				# run command and gather all output in memory
 				#output = subprocess.run("cat", shell=True, stdout=subprocess.PIPE).stdout
 				# convert output of the process to string
 				#str = output.decode("utf-8")
-
+				# run command and gather all output in memory
+				output = subprocess.run(newCommand, shell=True, stdout=subprocess.PIPE).stdout
+				# convert output of the process to string
+				message = output.decode('utf-8')
+			except FileNotFoundError: 
+				message = "Could not find file: " + filename
 			except:
-				message = "Error: Could not cat\n"
+				message = "Error: Could not cat"
 
 		#TAKE A SNAPSHOT OF ALL THE FILES IN CURRENT DIRECTORY AND SAVE IT IN MEMORY (snap)
 		elif command == "snap":
@@ -178,12 +186,12 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 				#fileList = defaultdict(list)
 				currentDirectory = os.getcwd()
 				self.fileList[currentDirectory] = [f.name for f in os.scandir() if f.is_file()]
-				message = "Snapshot of " + str(currentDirectory) + " has been saved\n"
+				message = "Snapshot of " + str(currentDirectory) + " has been saved"
 				print(self.fileList[currentDirectory])
 			except:
 				tb = traceback.format_exc()
 				print (tb)
-				message = "Error: Unable to take screenshot\n"
+				message = "Error: Unable to take screenshot"
 
 		#COMPARE THE CONTENTS OF THE CURRENT DIRECTORY TO THE SAVED SNAPSHOT AND REPORT DIFFERENCES (diff)
 		elif command == "diff":
@@ -195,9 +203,9 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 				self.fileList2[str(currentDirectory)] = [f.name for f in os.scandir() if f.is_file()]
 
 				if self.fileList[currentDirectory] == self.fileList2[currentDirectory]:
-					message = "The files are the same\n"
+					message = "The files are the same"
 				elif len(self.fileList[currentDirectory]) < 1:
-					message = "Error: Original snapshot does not exist\n"
+					message = "Error: Original snapshot does not exist"
 					print (message)
 				else:
 					#diffList = defaultdict(list)
@@ -209,7 +217,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 						if x not in self.fileList[str(currentDirectory)]:
 							self.diffList[str(currentDirectory)].append(str(x) + " was added")
 							print("second: " + x)
-					message = "These are the differences:\n\n" + ("\n".join(self.diffList[currentDirectory])) +"\n"
+					message = "These are the differences:\n\n" + ("\n".join(self.diffList[currentDirectory]))
 
 					print (self.fileList[currentDirectory])
 					print (self.fileList2[currentDirectory])
@@ -220,37 +228,37 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 			except NameError:
 				tb = traceback.format_exc()
 				print (tb)
-				message = "Error: Original snapshot does not exist\n"
+				message = "Error: Original snapshot does not exist"
 
 		elif command == "help":
 			
 			try:
 				if userCommand[1] == "pwd":
-					message = "[pwd] shows your current directory\nUsage: pwd\n"
+					message = "[pwd] shows your current directory\nUsage: pwd" 
 				elif userCommand[1] == "cd":
-					message = "[cd] changes directory. \nUsage: cd <dir>\n"	
+					message = "[cd] changes directory. \nUsage: cd <dir>"	
 				elif userCommand[1] == "ls":
-					message = "[ls] lists the files and folders in current directory \nUsage: ls\n"
+					message = "[ls] lists the files and folders in current directory \nUsage: ls"
 				elif userCommand[1] == "cp":
-					message = "[cp] copies a file into another file. \nUsage: cp <file1> <file2>\n"	
+					message = "[cp] copies a file into another file. \nUsage: cp <file1> <file2>"	
 				elif userCommand[1] == "mv":
-					message = "[mv] renames a file. \nUsage: mv <filename> <newFilename>\n"
+					message = "[mv] renames a file. \nUsage: mv <filename> <newFilename>"
 				elif userCommand[1] == "rm":
-					message = "[rm] removes a file. \nUsage: rm <file>\n"
+					message = "[rm] removes a file. \nUsage: rm <file>"
 				elif userCommand[1] == "cat":
-					message = "[cat] shows contents of a file. \nUsage: cat <file>\n"
+					message = "[cat] shows contents of a file. \nUsage: cat <file>"
 				elif userCommand[1] == "snap":
-					message = "[snap] takes saves a list of files in current directory.\n Usage: snap\n"
+					message = "[snap] takes saves a list of files in current directory.\n Usage: snap"
 				elif userCommand[1] == "diff":
-					message = "[diff] shows differences of files in current directory with previous snapshot.\n Usage: diff\n"		
+					message = "[diff] shows differences of files in current directory with previous snapshot.\n Usage: diff"		
 				elif userCommand[1] == "help":
-					message = "You know what it does. Stop asking me\n"
+					message = "You know what it does. Stop asking me"
 				elif userCommand[1] == "who":
-					message = "[who] lists user[s] currently logged in\n"
+					message = "[who] lists user[s] currently logged in"
 				elif userCommand[1] == "ps":
-					message = "[ps] shows the currently running programs\n"
+					message = "[ps] shows the currently running programs"
 				else:
-					message = "Error: Invalid command. Type \"help\" for available commands\n"
+					message = "Error: Invalid command. Type \"help\" for available commands"
 			except:
 				helpMessage = "\n".join([
 					"---------------------------------",
@@ -287,7 +295,8 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 			sys.exit()
 		elif command in ("who", "ps"):
 			# run command and gather all output in memory
-			output = subprocess.run(command, shell=True, stdout=subprocess.PIPE).stdout
+			#output = subprocess.run(command, shell=True, stdout=subprocess.PIPE).stdout
+			output = subprocess.check_output(command)
 			# convert output of the process to string
 			message = output.decode("utf-8")
 		#OPTIONAL PICK 2
@@ -307,7 +316,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 			message = "Error: Command not recognized. \n\nType \'help\' to see available commands" 
 
 		#print(message)
-		self.request.sendall(bytearray(message + "\n", "utf -8"))
+		self.request.sendall(bytearray(message + "\n\n", "utf -8"))
 		#return message
 
 if __name__ == "__main__":
