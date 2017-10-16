@@ -3,7 +3,7 @@ CPSC 526 Assignment #2
 Steven Leong 10129668 T01
 Josh Quines 10138118 T03
 
-How to run:		python A2.py <port>
+How to run:		python3 A2.py <port>
 
 How to Connect: 	nc localhost <port>
 	make sure its the same port number
