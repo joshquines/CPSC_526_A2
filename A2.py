@@ -161,22 +161,22 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
 		# TAKE A SNAPSHOT OF ALL THE FILES IN CURRENT DIRECTORY AND SAVE IT IN MEMORY (snap)
 		elif command == "snap":
+			self.hashList1.clear()
 			try:
 				currentDirectory = os.getcwd()
 
 				#SAVE SCREENSHOT
 				for file in os.listdir(currentDirectory):
-    				# Check if the item is actually a file
+					# Check if the item is actually a file
 					if os.path.isfile(file):
 						#Get Path name
 						file = currentDirectory + "/" + file
 						#Get sha-1 hash
-						FILE_BUFFER = 65536
 						hashFunc = hashlib.sha1()
 						# open the file and read it
 						with open(file, 'rb') as toHash:
 							while True:
-								theHash = toHash.read(FILE_BUFFER)
+								theHash = toHash.read()
 								if not theHash:
 									break
 								hashFunc.update(theHash)
@@ -246,7 +246,6 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 						
 						message = "\n".join(changes)
 						
-					self.hashList1.clear()
 					self.hashList2.clear()
 
 				except NameError:
