@@ -90,7 +90,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 		
 		# GET WORKING DIRECTORY (pwd)
 		if command == 'pwd':
-    		if len(userCommand) == 1:
+			if len(userCommand) == 1:
 				try:
 					#Get current working directory
 					directory = os.getcwd()
@@ -98,7 +98,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 				except:
 					message = "Error: Wrong number of inputs. Correct command is: pwd"
 			else:
-    			message = "Error: Wrong usage of \'" + command + "\': Command does not accept parameters"
+				message = "Error: Wrong usage of \'" + command + "\': Command does not accept parameters"
 
 		# CHANGE WORKING DIRECTORY (cd)
 		elif command == 'cd':
@@ -168,7 +168,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
 		# TAKE A SNAPSHOT OF ALL THE FILES IN CURRENT DIRECTORY AND SAVE IT IN MEMORY (snap)
 		elif command == "snap":
-    		if len(userCommand) == 1:
+			if len(userCommand) == 1:
 				self.hashList1.clear()
 				try:
 					currentDirectory = os.getcwd()
@@ -201,11 +201,11 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 					print (tb)
 					message = "Error: Unable to take screenshot"
 			else:
-    			message = "Error: Wrong usage of \'" + command + "\': Command does not accept parameters"
+				message = "Error: Wrong usage of \'" + command + "\': Command does not accept parameters"
 
 		# COMPARE THE CONTENTS OF THE CURRENT DIRECTORY TO THE SAVED SNAPSHOT AND REPORT DIFFERENCES (diff)
 		elif command == "diff":
-    		if len(userCommand) == 1:
+			if len(userCommand) == 1:
 				changes = []
 				if not self.hashList1:
 					message = "Error: Original snapshot does not exist"
@@ -265,7 +265,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 						print (tb)
 						message = "Error: Original snapshot does not exist"
 			else:
-    			message = "Error: Wrong usage of \'" + command + "\': Command does not accept parameters"
+				message = "Error: Wrong usage of \'" + command + "\': Command does not accept parameters"
 
 		elif command == "help":
 			
