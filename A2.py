@@ -154,14 +154,14 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
 		# RETURN CONTENTS OF THE FILE (cat)
 		elif command == "cat":
+			filename = userCommand[1]
+			newCommand = command + " " + filename
 			try:
-				filename = userCommand[1]
-				newCommand = "cat " + filename
 				# run command and gather all output in memory
 				output = subprocess.run(newCommand, shell=True, stdout=subprocess.PIPE).stdout
 				# convert output of the process to string
 				if not output:
-					message = "File does not exist"
+    				message = "File does not exist"
 				else:
 					message = output.decode('utf-8')
 			except FileNotFoundError: 
