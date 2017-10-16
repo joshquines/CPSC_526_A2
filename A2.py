@@ -90,12 +90,15 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 		
 		# GET WORKING DIRECTORY (pwd)
 		if command == 'pwd':
-			try:
-				#Get current working directory
-				directory = os.getcwd()
-				message = "Current working directory is: " + directory
-			except:
-				message = "Error: Wrong number of inputs. Correct command is: pwd"
+    		if len(userCommand) == 1:
+				try:
+					#Get current working directory
+					directory = os.getcwd()
+					message = "Current working directory is: " + directory
+				except:
+					message = "Error: Wrong number of inputs. Correct command is: pwd"
+			else:
+    			message = "Error: Wrong usage of \'" + command + "\': Command does not accept parameters"
 
 		# CHANGE WORKING DIRECTORY (cd)
 		elif command == 'cd':
@@ -165,97 +168,104 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
 		# TAKE A SNAPSHOT OF ALL THE FILES IN CURRENT DIRECTORY AND SAVE IT IN MEMORY (snap)
 		elif command == "snap":
-			self.hashList1.clear()
-			try:
-				currentDirectory = os.getcwd()
-
-				#SAVE SCREENSHOT
-				for file in os.listdir(currentDirectory):
-					# Check if the item is actually a file
-					if os.path.isfile(file):
-						#Get Path name
-						file = currentDirectory + "/" + file
-						#Get sha-1 hash
-						hashFunc = hashlib.sha1()
-						# open the file and read it
-						with open(file, 'rb') as toHash:
-							while True:
-								theHash = toHash.read()
-								if not theHash:
-									break
-								hashFunc.update(theHash)
-						toHash.close()
-						# store filename and hash value in dictionary
-						self.hashList1[file] = hashFunc.hexdigest()
-				message = "Snapshot of " + str(currentDirectory) + " has been saved"
-				#----- Debug ------
-				#for k, v in self.hashList1.items():
-				#		print ("Key: " + k + "   Hash: " + v)
-			except:
-				tb = traceback.format_exc()
-				print (tb)
-				message = "Error: Unable to take screenshot"
-
-		# COMPARE THE CONTENTS OF THE CURRENT DIRECTORY TO THE SAVED SNAPSHOT AND REPORT DIFFERENCES (diff)
-		elif command == "diff":
-			changes = []
-			if not self.hashList1:
-				message = "Error: Original snapshot does not exist"
-			else:
-				# Get a new snapshot
-				# same as snap
+    		if len(userCommand) == 1:
+				self.hashList1.clear()
 				try:
 					currentDirectory = os.getcwd()
+
 					#SAVE SCREENSHOT
 					for file in os.listdir(currentDirectory):
+						# Check if the item is actually a file
 						if os.path.isfile(file):
-							#Get Filename
+							#Get Path name
 							file = currentDirectory + "/" + file
 							#Get sha-1 hash
-							FILE_BUFFER = 65536
 							hashFunc = hashlib.sha1()
+							# open the file and read it
 							with open(file, 'rb') as toHash:
 								while True:
-									theHash = toHash.read(FILE_BUFFER)
+									theHash = toHash.read()
 									if not theHash:
 										break
 									hashFunc.update(theHash)
 							toHash.close()
-							self.hashList2[file] = hashFunc.hexdigest()
+							# store filename and hash value in dictionary
+							self.hashList1[file] = hashFunc.hexdigest()
+					message = "Snapshot of " + str(currentDirectory) + " has been saved"
 					#----- Debug ------
-					#print("Diff SNAP")
-					#for k, v in self.hashList2.items():
-					#	print ("Key: " + k + "   Hash: " + v)
-
-					#COMPARE SCREENSHOTS  
-					if self.hashList1 == self.hashList2:
-						message = "Snapshots are the same, no changes were made"
-					else:
-						# if a file in the new dictionary is not in the old dictionary, it has been added
-						for key in self.hashList2.keys():
-							filename = key.replace(currentDirectory, "")
-							if key not in self.hashList1:
-								changes.append(str(filename + " -- was added"))
-						# for all (key,value) in the original dictionary
-						for key, value in self.hashList1.items():
-							filename = key.replace(currentDirectory, "")
-							# if the file is still the directory but the contents have been changed, it has been modified
-							if key in self.hashList2 and self.hashList2[key] != value:
-								changes.append(str(filename) + " -- has been modified")
-								continue
-							# if the file is not in the directory anymore it has been deleted
-							if key not in self.hashList2:
-								changes.append(str(filename + " -- was deleted"))
-								continue
-						
-						message = "\n".join(changes)
-						
-					self.hashList2.clear()
-
-				except NameError:
+					#for k, v in self.hashList1.items():
+					#		print ("Key: " + k + "   Hash: " + v)
+					
+				except:
 					tb = traceback.format_exc()
 					print (tb)
+					message = "Error: Unable to take screenshot"
+			else:
+    			message = "Error: Wrong usage of \'" + command + "\': Command does not accept parameters"
+
+		# COMPARE THE CONTENTS OF THE CURRENT DIRECTORY TO THE SAVED SNAPSHOT AND REPORT DIFFERENCES (diff)
+		elif command == "diff":
+    		if len(userCommand) == 1:
+				changes = []
+				if not self.hashList1:
 					message = "Error: Original snapshot does not exist"
+				else:
+					# Get a new snapshot
+					# same as snap
+					try:
+						currentDirectory = os.getcwd()
+						#SAVE SCREENSHOT
+						for file in os.listdir(currentDirectory):
+							if os.path.isfile(file):
+								#Get Filename
+								file = currentDirectory + "/" + file
+								#Get sha-1 hash
+								FILE_BUFFER = 65536
+								hashFunc = hashlib.sha1()
+								with open(file, 'rb') as toHash:
+									while True:
+										theHash = toHash.read(FILE_BUFFER)
+										if not theHash:
+											break
+										hashFunc.update(theHash)
+								toHash.close()
+								self.hashList2[file] = hashFunc.hexdigest()
+						#----- Debug ------
+						#print("Diff SNAP")
+						#for k, v in self.hashList2.items():
+						#	print ("Key: " + k + "   Hash: " + v)
+
+						#COMPARE SCREENSHOTS  
+						if self.hashList1 == self.hashList2:
+							message = "Snapshots are the same, no changes were made"
+						else:
+							# if a file in the new dictionary is not in the old dictionary, it has been added
+							for key in self.hashList2.keys():
+								filename = key.replace(currentDirectory, "")
+								if key not in self.hashList1:
+									changes.append(str(filename + " -- was added"))
+							# for all (key,value) in the original dictionary
+							for key, value in self.hashList1.items():
+								filename = key.replace(currentDirectory, "")
+								# if the file is still the directory but the contents have been changed, it has been modified
+								if key in self.hashList2 and self.hashList2[key] != value:
+									changes.append(str(filename) + " -- has been modified")
+									continue
+								# if the file is not in the directory anymore it has been deleted
+								if key not in self.hashList2:
+									changes.append(str(filename + " -- was deleted"))
+									continue
+							
+							message = "\n".join(changes)
+							
+						self.hashList2.clear()
+
+					except NameError:
+						tb = traceback.format_exc()
+						print (tb)
+						message = "Error: Original snapshot does not exist"
+			else:
+    			message = "Error: Wrong usage of \'" + command + "\': Command does not accept parameters"
 
 		elif command == "help":
 			
