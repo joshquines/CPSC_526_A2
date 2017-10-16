@@ -81,8 +81,12 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 		userInput = x
 		
 		# Get UserCommand
-		userCommand = userInput.split()
-		command = userCommand[0]
+		try:
+			userCommand = userInput.split()
+			command = userCommand[0]
+		except:
+			print("User entered an empty command.")
+			command = "Invalid Command"
 		
 		# GET WORKING DIRECTORY (pwd)
 		if command == 'pwd':
