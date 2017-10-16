@@ -160,7 +160,10 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 				# run command and gather all output in memory
 				output = subprocess.run(newCommand, shell=True, stdout=subprocess.PIPE).stdout
 				# convert output of the process to string
-				message = output.decode('utf-8')
+				if not output:
+					message = "File does not exist"
+				else:
+					message = output.decode('utf-8')
 			except FileNotFoundError: 
 				message = "Could not find file: " + filename
 			except:
@@ -220,11 +223,10 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 								#Get Filename
 								file = currentDirectory + "/" + file
 								#Get sha-1 hash
-								FILE_BUFFER = 65536
 								hashFunc = hashlib.sha1()
 								with open(file, 'rb') as toHash:
 									while True:
-										theHash = toHash.read(FILE_BUFFER)
+										theHash = toHash.read()
 										if not theHash:
 											break
 										hashFunc.update(theHash)
