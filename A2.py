@@ -161,7 +161,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 				output = subprocess.run(newCommand, shell=True, stdout=subprocess.PIPE).stdout
 				# convert output of the process to string
 				if not output:
-    				message = "File does not exist"
+					message = "File does not exist"
 				else:
 					message = output.decode('utf-8')
 			except FileNotFoundError: 
